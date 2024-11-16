@@ -9,6 +9,7 @@ add_test(NAME ${compile_name}
 macro (ttest name)
   add_test(NAME ${name} COMMAND "${name}_sanitized")
   set_property(TEST ${name} PROPERTY FIXTURES_REQUIRED compile)
+  set_tests_properties(${name} PROPERTIES TIMEOUT 300) # 设置超时时间为 300 秒
 endmacro (ttest)
 
 set_property(TEST ${compile_name} PROPERTY TIMEOUT 0)
