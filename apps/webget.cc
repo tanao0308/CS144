@@ -1,4 +1,5 @@
-#include "socket.hh"
+//#include "socket.hh"
+#include "tcp_minnow_socket.hh"
 
 #include <cstdlib>
 #include <iostream>
@@ -9,14 +10,11 @@ using namespace std;
 
 void get_URL( const string& host, const string& path )
 {
-  //  cerr << "Function called: get_URL(" << host << ", " << path << ")\n";
-  //  cerr << "Warning: get_URL() has not been implemented yet.\n";
-
   // 使用 主机名 + 服务名（http服务或者具体端口号） 来初始化地址
   const string server = "http";
   Address address( host, server );
 
-  TCPSocket socket;
+  CS144TCPSocket socket;
   socket.connect( address );
 
   string buffer;
