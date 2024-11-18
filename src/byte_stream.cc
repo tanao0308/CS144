@@ -50,10 +50,9 @@ uint64_t Reader::bytes_popped() const
 
 string_view Reader::peek() const
 {
-  if ( is_finished() ) {
+  if ( is_finished() || stream_.empty() ) {
     return string_view( "" );
   }
-  while ( stream_.size() == 0 ) {}
   string_view result( &stream_.front(), 1 );
   return result;
 }
