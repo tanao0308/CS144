@@ -7,6 +7,7 @@
 #include <string>
 
 // Helper type for an Ethernet address (an array of six bytes)
+// MAC 地址是一个 48 位（二进制） 的地址，通常用 12 位十六进制数字表示（如 00:1A:2B:3C:4D:5E）
 using EthernetAddress = std::array<uint8_t, 6>;
 
 // Ethernet broadcast address (ff:ff:ff:ff:ff:ff)
