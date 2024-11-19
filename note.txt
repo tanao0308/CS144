@@ -1,2 +1,8 @@
-# 将源代码目录设置为 ./ 将生成目录设置为 ./build
-cmake -S . -B build
+>>> TCP
+    sender:
+        应用层（用户）向 ByteStream 写入数据， TCP 的 sender 服务就会自动读取被写入的数据并发送出去。再根据接收方返回的报文进行重传等处理。
+
+    receiver:
+        接收端的 recever 服务会自动接受数据并按顺序放入 ByteStream 中，用户只需要不断从中读取即可获得应用层数据。
+        接收端在收到数据之后，使用 reassembler 对数据进行重排，再插入进 ByteStream 的尾部。
+
