@@ -29,27 +29,20 @@ NetworkInterface::NetworkInterface( string_view name,
 void NetworkInterface::send_datagram( const InternetDatagram& dgram, const Address& next_hop )
 {
   uint32_t dst_ip = next_hop.ipv4_numeric();
-  if ( !ip2mac_.count( dst_ip ) ) {
+  if ( !ip2mac_.count( dst_ip ) || timer_ - last_broadcast_[dst_ip] >= 30000 ) {
     // 若上次发这个 IP 的请求间隔 >= 5000 ms ，则广播
-    if(!last_broadcast_.count(dst_ip) || timer_ - last_broadcast_[dst_ip] >= 5000) {
+    if ( !last_broadcast_.count( dst_ip ) || timer_ - last_broadcast_[dst_ip] >= 5000 ) {
       last_broadcast_[dst_ip] = timer_;
-      broadcast(dst_ip);
+      broadcast( dst_ip );
     }
-    waiting_dgram_[dst_ip].push_back(std::make_pair(dgram, next_hop));
+    waiting_dgram_[dst_ip].push_back( std::make_pair( dgram, next_hop ) );
     return;
   }
 
-  EthernetHeader header {
-    .dst = ip2mac_[dst_ip],
-    .src = ethernet_address_,
-    .type = EthernetHeader::TYPE_IPv4
-  };
+  EthernetHeader header { .dst = ip2mac_[dst_ip], .src = ethernet_address_, .type = EthernetHeader::TYPE_IPv4 };
   Serializer serializer;
   dgram.serialize( serializer );
-  EthernetFrame frame {
-    .header = header,
-    .payload = serializer.output()
-  };
+  EthernetFrame frame { .header = header, .payload = serializer.output() };
   transmit( frame );
 }
 
@@ -70,36 +63,29 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
     Parser parser( frame.payload );
     ARPMessage arpmsg;
     arpmsg.parse( parser ); // 从底层的帧里解析出 arp 报文
-    // 读取对方传来的 ip 和 mac
+    // 读取并记录对方传来的 ip 和 mac
     ip2mac_[arpmsg.sender_ip_address] = arpmsg.sender_ethernet_address;
+    last_broadcast_[arpmsg.sender_ip_address] = timer_;
     // 若是请求报文且匹配 ip 则需要回复 ARP
-    if ( arpmsg.opcode == ARPMessage::OPCODE_REQUEST && ip_address_.ipv4_numeric() == arpmsg.target_ip_address) {
-      ARPMessage reply_arpmsg {
-        .opcode = ARPMessage::OPCODE_REPLY,
-        .sender_ethernet_address = ethernet_address_,
-        .sender_ip_address = ip_address_.ipv4_numeric(),
-        .target_ethernet_address = arpmsg.sender_ethernet_address,
-        .target_ip_address = arpmsg.sender_ip_address
-      };
+    if ( arpmsg.opcode == ARPMessage::OPCODE_REQUEST && ip_address_.ipv4_numeric() == arpmsg.target_ip_address ) {
+      ARPMessage reply_arpmsg { .opcode = ARPMessage::OPCODE_REPLY,
+                                .sender_ethernet_address = ethernet_address_,
+                                .sender_ip_address = ip_address_.ipv4_numeric(),
+                                .target_ethernet_address = arpmsg.sender_ethernet_address,
+                                .target_ip_address = arpmsg.sender_ip_address };
       EthernetHeader header {
-        .dst = arpmsg.sender_ethernet_address,
-        .src = ethernet_address_,
-        .type = EthernetHeader::TYPE_ARP
-      };
+        .dst = arpmsg.sender_ethernet_address, .src = ethernet_address_, .type = EthernetHeader::TYPE_ARP };
       Serializer serializer;
       reply_arpmsg.serialize( serializer );
-      EthernetFrame reply_frame {
-        .header = header,
-        .payload = serializer.output()
-      };
+      EthernetFrame reply_frame { .header = header, .payload = serializer.output() };
       transmit( reply_frame );
     }
     // 检测现在是否可以有之前没传的 IPv4 可以传了
     uint32_t dst_ip = arpmsg.sender_ip_address;
-    for(auto pair : waiting_dgram_[dst_ip]) {
-      send_datagram(pair.first, pair.second);
+    for ( auto pair : waiting_dgram_[dst_ip] ) {
+      send_datagram( pair.first, pair.second );
     }
-    waiting_dgram_.erase(dst_ip);
+    waiting_dgram_.erase( dst_ip );
   }
 }
 
@@ -109,24 +95,16 @@ void NetworkInterface::tick( const size_t ms_since_last_tick )
   timer_ += ms_since_last_tick;
 }
 
-void NetworkInterface::broadcast(uint32_t dst_ip) {
-  EthernetHeader header {
-    .dst = ETHERNET_BROADCAST,
-    .src = ethernet_address_,
-    .type = EthernetHeader::TYPE_ARP
-  };
-  ARPMessage arpmsg {
-    .opcode = ARPMessage::OPCODE_REQUEST,
-    .sender_ethernet_address = ethernet_address_,
-    .sender_ip_address = ip_address_.ipv4_numeric(),
-    .target_ethernet_address = 0,
-    .target_ip_address = dst_ip
-  };
+void NetworkInterface::broadcast( uint32_t dst_ip )
+{
+  EthernetHeader header { .dst = ETHERNET_BROADCAST, .src = ethernet_address_, .type = EthernetHeader::TYPE_ARP };
+  ARPMessage arpmsg { .opcode = ARPMessage::OPCODE_REQUEST,
+                      .sender_ethernet_address = ethernet_address_,
+                      .sender_ip_address = ip_address_.ipv4_numeric(),
+                      .target_ethernet_address = 0,
+                      .target_ip_address = dst_ip };
   Serializer serializer;
   arpmsg.serialize( serializer );
-  EthernetFrame frame {
-    .header = header,
-    .payload = serializer.output()
-  };
+  EthernetFrame frame { .header = header, .payload = serializer.output() };
   transmit( frame );
 }
