@@ -1,6 +1,6 @@
 include(CTest)
 
-list(APPEND CMAKE_CTEST_ARGUMENTS --output-on-failure --stop-on-failure --timeout 120 -E 'speed_test|optimization|webget')
+list(APPEND CMAKE_CTEST_ARGUMENTS --output-on-failure --stop-on-failure --timeout 12 -E 'speed_test|optimization|webget')
 
 set(compile_name "compile with bug-checkers")
 add_test(NAME ${compile_name}
@@ -9,7 +9,6 @@ add_test(NAME ${compile_name}
 macro (ttest name)
   add_test(NAME ${name} COMMAND "${name}_sanitized")
   set_property(TEST ${name} PROPERTY FIXTURES_REQUIRED compile)
-#  set_tests_properties(${name} PROPERTIES TIMEOUT 300) # 设置超时时间为 300 秒
 endmacro (ttest)
 
 set_property(TEST ${compile_name} PROPERTY TIMEOUT 0)
@@ -70,10 +69,12 @@ add_custom_target (check2 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --s
 add_custom_target (check3 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --stop-on-failure --timeout 120 -R '^byte_stream_|^reassembler_|^wrapping|^recv|^send')
 
 add_custom_target (check3_1 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --stop-on-failure --timeout 120 -R '^send')
+add_custom_target (check5 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --stop-on-failure --timeout 12 -R '^net_interface')
 
 add_custom_target (check4 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --stop-on-failure --timeout 120 -R '^net_interface')
 
 add_custom_target (check5 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --stop-on-failure --timeout 120 -R '^net_interface|^router')
+add_custom_target (check6 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --stop-on-failure --timeout 12 -R '^net_interface|^router')
 
 ###
 
