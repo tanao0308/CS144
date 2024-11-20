@@ -32,7 +32,7 @@ void get_URL( const string& host, const string& path )
       break;
     }
   }
-  socket.shutdown( 0 );
+  socket.wait_until_closed();
 }
 
 int main( int argc, char* argv[] )
