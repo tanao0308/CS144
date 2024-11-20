@@ -1,10 +1,18 @@
 #pragma once
 
+#include <list>
 #include <memory>
 #include <optional>
 
 #include "exception.hh"
 #include "network_interface.hh"
+
+struct RouterData
+{
+  uint32_t ip_prefix;
+  std::optional<Address> next_hop;
+  size_t interface_num;
+};
 
 // \brief A router that has multiple network interfaces and
 // performs longest-prefix-match routing between them.
@@ -35,4 +43,9 @@ public:
 private:
   // The router's collection of network interfaces
   std::vector<std::shared_ptr<NetworkInterface>> _interfaces {};
+
+  // 存的是某个 ip 的转发规则
+  std::list<RouterData> routing_table_ {};
+
+  void use_ethernet( InternetDatagram& );
 };

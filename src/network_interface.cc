@@ -59,6 +59,7 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
     InternetDatagram dgram;
     dgram.parse( parser );
     datagrams_received_.push( dgram );
+    cerr << "receive datagrams" << endl;
   } else if ( frame.header.type == EthernetHeader::TYPE_ARP ) {
     Parser parser( frame.payload );
     ARPMessage arpmsg;
