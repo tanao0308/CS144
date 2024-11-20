@@ -9,9 +9,23 @@
 
 struct RouterData
 {
-  uint32_t ip_prefix;
-  std::optional<Address> next_hop;
-  size_t interface_num;
+  std::optional<Address> next_hop = std::nullopt;
+  size_t interface_num = 0;
+  uint32_t son[2] = { 0, 0 };
+};
+
+class Trie
+{
+public:
+  Trie() { node.push_back( RouterData {} ); }
+  void insert( uint32_t route_prefix,
+               uint8_t prefix_length,
+               const std::optional<Address> next_hop,
+               const size_t interface_num );
+  RouterData find( uint32_t ip );
+
+private:
+  std::vector<RouterData> node {};
 };
 
 // \brief A router that has multiple network interfaces and
@@ -45,7 +59,7 @@ private:
   std::vector<std::shared_ptr<NetworkInterface>> _interfaces {};
 
   // 存的是某个 ip 的转发规则
-  std::list<RouterData> routing_table_ {};
+  Trie trie {};
 
   void use_ethernet( InternetDatagram& );
 };
