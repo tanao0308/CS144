@@ -21,6 +21,7 @@ void Trie::insert( uint32_t route_prefix,
     }
     p = node[p].son[side];
   }
+  node[p].has_data = true;
   node[p].next_hop = next_hop;
   node[p].interface_num = interface_num;
 }
@@ -29,7 +30,9 @@ RouterData Trie::find( uint32_t ip )
   RouterData result;
   int p = 0;
   while ( true ) {
-    result = node[p];
+    if ( node[p].has_data ) {
+      result = node[p];
+    }
     bool side = ip & ( (uint32_t)1 << 31 ); // 0 左 1 右
     ip <<= 1;
     if ( !node[p].son[side] ) {

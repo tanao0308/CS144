@@ -9,6 +9,7 @@
 
 struct RouterData
 {
+  bool has_data = false;
   std::optional<Address> next_hop = std::nullopt;
   size_t interface_num = 0;
   uint32_t son[2] = { 0, 0 };

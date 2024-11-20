@@ -58,7 +58,6 @@ void NetworkInterface::recv_frame( const EthernetFrame& frame )
       return;
     }
     datagrams_received_.push( dgram );
-    cerr << "InternetDatagram " << dgram.header.to_string() << ", content = " << dgram.payload[0] << endl;
   } else if ( frame.header.type == EthernetHeader::TYPE_ARP ) {
     ARPMessage arpmsg;
     parse( arpmsg, frame.payload ); // 从底层的帧里解析出 arp 报文
